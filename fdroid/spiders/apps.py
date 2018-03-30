@@ -30,6 +30,8 @@ class AppsSpider(CrawlSpider):
         last_version_name = response.css('ul.package-versions-list > .package-version:first-child  > .package-version-header a:first-child::attr(name)').extract()
         added_on = response.css('ul.package-versions-list > .package-version:first-child  > .package-version-header::text').extract()
         last_version_code = response.css('ul.package-versions-list > .package-version:first-child  > .package-version-header a:nth-child(2)::attr(name)').extract()
+        download_url = response.css('ul.package-versions-list > .package-version:first-child  > .package-version-download a:first-child::attr(href)').extract()
+
 
         item = AppItem()
         item['name'] = app_name
@@ -37,5 +39,6 @@ class AppsSpider(CrawlSpider):
         item['version_name'] = last_version_name
         item['version_number'] = last_version_code
         item['added_on']  = added_on[len(added_on) - 1].strip().split('on')[1]
+        item['download_url'] = download_url
 
         yield item

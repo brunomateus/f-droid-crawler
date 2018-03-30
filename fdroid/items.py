@@ -15,3 +15,4 @@ class AppItem(scrapy.Item):
     version_name = scrapy.Field()
     version_number = scrapy.Field()
     added_on = scrapy.Field()
+    download_url = scrapy.Field()
