@@ -12,7 +12,9 @@ class AppItem(scrapy.Item):
     # define the fields for your item here like:
     name = scrapy.Field()
     summary = scrapy.Field()
-    version_name = scrapy.Field()
-    version_number = scrapy.Field()
-    added_on = scrapy.Field()
+    last_version_name = scrapy.Field()
+    last_version_number = scrapy.Field()
+    last_added_on = scrapy.Field()
+    versions = scrapy.Field()
     download_url = scrapy.Field()
+    source_repo = scrapy.Field()

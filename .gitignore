@@ -106,3 +106,4 @@ venv.bak/
 *.swp
 * ~
 *.csv
+*.DS_STORE
