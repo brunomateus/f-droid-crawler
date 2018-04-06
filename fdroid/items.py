@@ -16,5 +16,5 @@ class AppItem(scrapy.Item):
     last_version_number = scrapy.Field()
     last_added_on = scrapy.Field()
     versions = scrapy.Field()
-    download_url = scrapy.Field()
+    last_download_url = scrapy.Field()
     source_repo = scrapy.Field()

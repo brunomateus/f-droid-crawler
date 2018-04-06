@@ -26,8 +26,8 @@ class BaseSpider(CrawlSpider):
 
         app_name = response.css('h3.package-name::text').extract()[0].strip()
         app_description = response.css('.package-summary::text').extract()[0].strip()
-        download_url = response.css('ul.package-versions-list > .package-version:first-child  > .package-version-download a:first-child::attr(href)').extract()
-        
+
+        download_urls = response.css('ul.package-versions-list > .package-version  > .package-version-download a:first-child::attr(href)').extract()
         other_informations = response.css('.package-links .package-link > a')
         link_text = other_informations.css('::text').extract()
 
@@ -48,23 +48,20 @@ class BaseSpider(CrawlSpider):
             if date:
                 versions_date.append(date.split('on')[1])
 
-        last_version_name = versions_numbers[0]
-        last_version_code = versions_numbers[1]
-        added_on = versions_date[0]
-
         for i in range(len(versions_date)):
             versions.append({ 'name': versions_numbers[i],
                 'code': versions_numbers[i + 1],
+                'download_url': download_urls[i],
                 'added_on': versions_date[i]
                 })
 
         item = AppItem()
         item['name'] = app_name
         item['summary'] = app_description
-        item['last_version_name'] = last_version_name
-        item['last_version_number'] = last_version_code
-        item['last_added_on']  = added_on 
-        item['download_url'] = download_url
+        item['last_version_name'] = versions_numbers[0]
+        item['last_version_number'] = versions_numbers[1]
+        item['last_added_on']  = versions_date[0] 
+        item['last_download_url'] = download_urls[0]
         item['source_repo'] = source_code
         item['versions'] = versions
         yield item
