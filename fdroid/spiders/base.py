@@ -8,11 +8,22 @@ class BaseSpider(CrawlSpider):
     name = 'base'
     allowed_domains = ['f-droid.org']
     start_urls = ['http://f-droid.org/']
+    handle_httpstatus_list = [404]
 
-    def parse_item(self, response):
-        pass
+    def __init__(self, *args, **kwargs):
+        super(BaseSpider, self).__init__(*args, **kwargs)
+        self.visited_apps = 0
+        self.success = 0
  
     def parse_detail_page(self, response):
+        self.visited_apps +=1
+        if response.status == 404:
+            self.logger.error("Apps not found %s", response.url)
+            return
+
+        self.success += 1
+        print("[ %s/%s ] - %s" %  (self.success, self.visited_apps, response.url))
+
         app_name = response.css('h3.package-name::text').extract()[0].strip()
         app_description = response.css('.package-summary::text').extract()[0].strip()
         download_url = response.css('ul.package-versions-list > .package-version:first-child  > .package-version-download a:first-child::attr(href)').extract()

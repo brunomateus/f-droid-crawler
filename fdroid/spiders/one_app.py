@@ -20,7 +20,6 @@ class OneAppSpider(BaseSpider):
     def start_requests(self):
         for idx, package in enumerate(self.packages):
             url = 'https://www.f-droid.org/en/packages/%s' % package
-            print("[ %s ] - %s" % (idx + 1, url))
             yield scrapy.Request(url=url, callback=self.parse_detail_page)
 
     
