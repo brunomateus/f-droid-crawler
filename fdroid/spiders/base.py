@@ -2,7 +2,7 @@
 import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from fdroid.items import AppItem
-
+from datetime import datetime
 
 class BaseSpider(CrawlSpider):
     name = 'base'
@@ -49,20 +49,21 @@ class BaseSpider(CrawlSpider):
                 versions_date.append(date.split('on')[1])
 
         for i in range(len(versions_date)):
-            versions.append({ 'name': versions_numbers[i],
-                'code': versions_numbers[i + 1],
-                'download_url': download_urls[i],
-                'added_on': versions_date[i]
+            versions.append({ 'name': versions_numbers[2*i],
+                'code': versions_numbers[2*i + 1].strip(),
+                'download_url': download_urls[i].strip(),
+                'added_on': versions_date[i].strip()
                 })
 
+            
         item = AppItem()
-        item['name'] = app_name
-        item['summary'] = app_description
-        item['last_version_name'] = versions_numbers[0]
-        item['last_version_number'] = versions_numbers[1]
-        item['last_added_on']  = versions_date[0] 
-        item['last_download_url'] = download_urls[0]
-        item['source_repo'] = source_code
+        item['name'] = app_name.strip()
+        item['summary'] = app_description.strip()
+        item['last_version_name'] = versions_numbers[0].strip()
+        item['last_version_number'] = versions_numbers[1].strip()
+        item['last_added_on']  = versions_date[0].strip()
+        item['last_download_url'] = download_urls[0].strip()
+        item['source_repo'] = source_code.strip()
         item['versions'] = versions
         yield item
 
