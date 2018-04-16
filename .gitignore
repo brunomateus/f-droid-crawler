@@ -107,3 +107,5 @@ venv.bak/
 * ~
 *.csv
 *.DS_STORE
+*.json
+*.csv
