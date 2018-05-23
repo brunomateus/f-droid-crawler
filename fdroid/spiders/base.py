@@ -27,19 +27,12 @@ class BaseSpider(CrawlSpider):
         app_name = response.css('h3.package-name::text').extract()[0].strip()
         app_description = response.css('.package-summary::text').extract()[0].strip()
 
-        download_urls = response.css('ul.package-versions-list > .package-version  > .package-version-download a:first-child::attr(href)').extract()
-        other_informations = response.css('.package-links .package-link > a')
-        link_text = other_informations.css('::text').extract()
-
-        for j in range(len(link_text)):
-            if link_text[j].upper() == 'SOURCE CODE':
-                break
-        source_code = other_informations.css('::attr(href)').extract()[j]
-
         versions_array  = response.css('ul.package-versions-list > .package-version  > .package-version-header')
         versions_numbers = versions_array.css('a::attr(name)').extract()
         text_date = response.css('ul.package-versions-list > .package-version  > .package-version-header::text').extract()
         
+        download_urls = response.css('ul.package-versions-list > .package-version  > .package-version-download a:first-child::attr(href)').extract()
+
         versions_date = []
         versions = []
 
@@ -55,7 +48,14 @@ class BaseSpider(CrawlSpider):
                 'added_on': versions_date[i].strip()
                 })
 
-            
+        other_informations = response.css('.package-links .package-link > a')
+        link_text = other_informations.css('::text').extract()
+
+        for j in range(len(link_text)):
+            if link_text[j].upper() == 'SOURCE CODE':
+                break
+        source_code = other_informations.css('::attr(href)').extract()[j]
+   
         item = AppItem()
         item['name'] = app_name.strip()
         item['summary'] = app_description.strip()
@@ -65,5 +65,34 @@ class BaseSpider(CrawlSpider):
         item['last_download_url'] = download_urls[0].strip()
         item['source_repo'] = source_code.strip()
         item['versions'] = versions
-        yield item
 
+        tech_info = other_informations[len(other_informations) - 1].css('::attr(href)').extract()[0]
+
+        request = scrapy.Request(tech_info, callback=self.parse_info_page)
+        request.meta['item'] = item
+        yield request
+
+    def parse_info_page(self, response):
+        item = response.meta['item']
+        
+        vnames = response.css('h2 > span::attr(id)').extract()
+        vcodes = response.css('h2 + p + p::text').extract()
+        package = response.css('#mw-content-text > div > div:nth-child(2) p:nth-child(2)::text').extract()[0].split(':')[1].strip()
+
+        item['number_of_versions'] = len(vnames)
+
+#        print("Retriving tech info:  %s versions found" % (item['number_of_versions']))
+
+        if item['number_of_versions'] <= 3:
+            yield item
+
+        versions = item['versions'] 
+
+        for i in range(3, len(vcodes)):
+            vcode = vcodes[i].split(':')[1].strip()
+            versions.append({ 'name': vnames[i],
+                'code': vcode,
+                'download_url': 'https://f-droid.org/archive/' + package + '_' + vcode + '.apk',
+                })
+
+        yield item

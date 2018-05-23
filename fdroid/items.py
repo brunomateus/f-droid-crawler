@@ -18,3 +18,4 @@ class AppItem(scrapy.Item):
     versions = scrapy.Field()
     last_download_url = scrapy.Field()
     source_repo = scrapy.Field()
+    number_of_versions = scrapy.Field()
