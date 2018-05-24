@@ -83,16 +83,15 @@ class BaseSpider(CrawlSpider):
 
 #        print("Retriving tech info:  %s versions found" % (item['number_of_versions']))
 
-        if item['number_of_versions'] <= 3:
-            yield item
+        if item['number_of_versions'] > 3:
 
-        versions = item['versions'] 
+            versions = item['versions'] 
 
-        for i in range(3, len(vcodes)):
-            vcode = vcodes[i].split(':')[1].strip()
-            versions.append({ 'name': vnames[i],
-                'code': vcode,
-                'download_url': 'https://f-droid.org/archive/' + package + '_' + vcode + '.apk',
-                })
+            for i in range(3, len(vcodes)):
+                vcode = vcodes[i].split(':')[1].strip()
+                versions.append({ 'name': vnames[i],
+                    'code': vcode,
+                    'download_url': 'https://f-droid.org/archive/' + package + '_' + vcode + '.apk',
+                    })
 
         yield item
