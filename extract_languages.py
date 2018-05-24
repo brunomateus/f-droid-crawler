@@ -1,6 +1,6 @@
 import json
-from pprint import pprint
 import sys
+import os.path
 from datetime import datetime
 from github import Github
 from github.GithubException import RateLimitExceededException
@@ -20,7 +20,6 @@ def get_language(repo_url):
             for l in languages:
                 languages[l] = (languages[l]/total_of_bytes)*100
             return {"name": repo.name, "languages": languages}
-            raise rate_e
         except UnknownObjectException as e:
             print("Impossible to recover language stats from: %s -  %s - Not found 404" % (repo_name, repo_url), file=sys.stderr)
         except Exception as e:
@@ -59,6 +58,8 @@ if input_file.endswith(".json"):
     if len(sys.argv) < 3:
         raise Exception("You need to inform the json field that contais the url repo")
     result["apps"] = parse_json(input_file, sys.argv[2])
+elif not os.path.isfile(input_file) and input_file.startswith("https://"):
+    result = get_language(input_file)
 else:
     result["apps"] = parse_simple_txt(input_file)
 
