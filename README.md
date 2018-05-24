@@ -3,6 +3,9 @@ Scrappy crawler to get information about apps from the F-droid repository
 
 ## We provide two ways, two crawlers, to get the links of F-droid application
 
+Two **helper** scripts are included too, **extract_by_year.py** and **extract_languages.py**.
+To see how to use them access our [wiki](https://github.com/brunomateus/f-droid-crawler/wiki).
+
 ### one_app.py
 
 To use this crawler you need to provide a file that contains a list of app's package. 
