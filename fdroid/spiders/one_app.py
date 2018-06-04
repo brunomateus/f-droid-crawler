@@ -6,7 +6,7 @@ from fdroid.items import AppItem
 
 class OneAppSpider(BaseSpider):
     name = 'one_app'
-    allowed_domains = ['www.f-droid.org']
+    allowed_domains = ['f-droid.org']
 
     def __init__(self, package_list_file=None, *args, **kwargs):
         super(OneAppSpider, self).__init__(*args, **kwargs)

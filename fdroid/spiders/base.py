@@ -51,11 +51,17 @@ class BaseSpider(CrawlSpider):
         other_informations = response.css('.package-links .package-link > a')
         link_text = other_informations.css('::text').extract()
 
-        for j in range(len(link_text)):
+        src_index = None
+        tech_index = None
+        n_links = len(link_text)
+        j = 0
+        while (src_index == None or tech_index == None) and j < n_links:
             if link_text[j].upper() == 'SOURCE CODE':
-                break
-        source_code = other_informations.css('::attr(href)').extract()[j]
-   
+                src_index = j
+            if link_text[j].upper() == 'TECHNICAL INFO':
+                tech_index = j
+            j += 1
+
         item = AppItem()
         item['name'] = app_name.strip()
         item['summary'] = app_description.strip()
@@ -63,10 +69,17 @@ class BaseSpider(CrawlSpider):
         item['last_version_number'] = versions_numbers[1].strip()
         item['last_added_on']  = versions_date[0].strip()
         item['last_download_url'] = download_urls[0].strip()
-        item['source_repo'] = source_code.strip()
-        item['versions'] = versions
 
-        tech_info = other_informations[len(other_informations) - 1].css('::attr(href)').extract()[0]
+        other_informations_links =  other_informations.css('::attr(href)').extract()
+        if src_index:
+            source_code = other_informations_links[src_index]
+            item['source_repo'] = source_code.strip()
+        if tech_index:
+           tech_info = other_informations_links[tech_index]
+
+
+        
+        item['versions'] = versions
 
         request = scrapy.Request(tech_info, callback=self.parse_info_page)
         request.meta['item'] = item
