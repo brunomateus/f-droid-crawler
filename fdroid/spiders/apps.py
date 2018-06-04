@@ -23,6 +23,6 @@ class AppsSpider(BaseSpider):
         self.logger.info('Processing... ' + response.url)
         item_links = response.css('#full-package-list .package-header::attr(href)').extract()
         for a in item_links:
-            yield scrapy.Request(response.urljoin(a), callback=self.parse_detail_page)
+            yield scrapy.Request(response.urljoin(a+"/"), callback=self.parse_detail_page)
 
  
