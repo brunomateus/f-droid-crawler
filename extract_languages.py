@@ -19,7 +19,7 @@ def get_language(repo_url):
             total_of_bytes = sum(languages.values())
             for l in languages:
                 languages[l] = (languages[l]/total_of_bytes)*100
-            return {"name": repo.name, "languages": languages}
+            return {"name": repo.name, "repo": repo.html_url, "languages": languages}
         except UnknownObjectException as e:
             print("Impossible to recover language stats from: %s -  %s - Not found 404" % (repo_name, repo_url), file=sys.stderr)
         except Exception as e:
