@@ -10,8 +10,7 @@ def get_language(repo_url):
     repo_url = repo_url.strip()
     prefix="https://github.com/"
     if repo_url.startswith(prefix):
-        g = Github()
-        #g = Github("username", "password_text")
+        g = Github("username", "password")
         repo_name = repo_url[len(prefix):]
         try:
             repo = g.get_repo(repo_name)
@@ -33,8 +32,12 @@ def parse_json(input_file, field_to_extract):
     json_content = json.load(open(input_file))
     for app in json_content:
         repo_url = app.get(field_to_extract, "")
+        package =""
+        if app.get("last_download_url", ""):
+            package = app["last_download_url"].split('_')[0][len("https://f-droid.org/repo/"):]
         app = get_language(repo_url)
         if app:
+            app["package"] = package
             result.append(app)
     return result
 
