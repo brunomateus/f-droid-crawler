@@ -12,6 +12,7 @@ class AppItem(scrapy.Item):
     # define the fields for your item here like:
     name = scrapy.Field()
     summary = scrapy.Field()
+    first_added = scrapy.Field()
     last_version_name = scrapy.Field()
     last_version_number = scrapy.Field()
     last_added_on = scrapy.Field()

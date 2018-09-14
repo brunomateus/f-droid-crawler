@@ -91,8 +91,10 @@ class BaseSpider(CrawlSpider):
         vnames = response.css('h2 > span::attr(id)').extract()
         vcodes = response.css('h2 + p + p::text').extract()
         package = response.css('#mw-content-text > div > div:nth-child(2) p:nth-child(2)::text').extract()[0].split(':')[1].strip()
+        first_added = response.css('#mw-content-text > div > div:nth-child(2) p:nth-child(10)::text').extract()[0].split(':')[1].strip()
 
         item['number_of_versions'] = len(vnames)
+        item['first_added'] = first_added
 
 #        print("Retriving tech info:  %s versions found" % (item['number_of_versions']))
 
