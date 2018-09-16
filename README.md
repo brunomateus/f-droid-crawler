@@ -41,8 +41,12 @@ all links from the all available app version.
 How to use - command line:
 
 ```
- scrapy crawl apps -o all_apps_12_05_2018-t.json -t json
+ scrapy crawl apps -a start_date='dd-mm-yyyy'-o all_apps_12_05_2018-t.json -t json
 ```
+
+The argument **start_date** is optional. Using this argument, only applications added at the **start_date** 
+or later will be crawled.
+
 
 ### Results
 For every call to our crawler it returns a json file contaning informations for every app visited by it.
