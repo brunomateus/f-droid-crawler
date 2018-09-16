@@ -91,39 +91,54 @@ The json contains a array, where every node is an application.
                 "code": "15", 
                 "download_url": "https://f-droid.org/repo/anupam.acrylic_15.apk", 
                 "added_on": "2016-10-11"
-           }, 
-           {
-               "name": "2.1.4", 
-               "code": "14", 
-               "download_url": "https://f-droid.org/repo/anupam.acrylic_14.apk", 
-               "added_on": "2016-02-19"
-           }, 
-           {
-               "name": "2.1.3", "code": "13", 
-               "download_url": "https://f-droid.org/archive/anupam.acrylic_13.apk"
-           }, 
-           {
-               "name": "2.1", 
-               "code": "11", 
-               "download_url": "https://f-droid.org/archive/anupam.acrylic_11.apk"
-           }, 
-           {
-               "name": "1.3.1", 
-               "code": "7", 
-               "download_url": "https://f-droid.org/archive/anupam.acrylic_7.apk"
-           }, 
-           {
-               "name": "1.2.4", 
-               "code": "4", 
-               "download_url": "https://f-droid.org/archive/anupam.acrylic_4.apk"
-           }, 
-           {
-               "name": "1.2.0", 
-               "code": "3", 
-               "download_url": "https://f-droid.org/archive/anupam.acrylic_3.apk"
            }
         ], 
-        "number_of_versions": 8
+        "number_of_versions": 2
    },
    ...
 ```
+
+#### Helper scripts
+
+**extract_by_year.py**
+
+It parses crawler exeuction results and retrieve applications published on a specific year.
+
+How to use - command line:
+
+```
+ python extract_by_year.py filename.json 2018 > output.json
+```
+
+**extract_json_field.awk**
+
+
+How to use - command line:
+
+```
+awk -v field="fieldname" -f extract_json_field.awk filename.json > output_filename
+```
+
+**extract_languages.py**
+
+Uses the Github API to get information about the programming languages used on each repo.
+
+How to use - command line:
+
+```
+python extract_languages.py input_filename.json json_field_name_whose_contains_URL > output_github_API_format.json
+```
+**extract_kotlin.py**
+
+Retrive only Kotlin application from the result of extract_languages.py .
+
+How to use - command line:
+
+```
+python extract_kotlin_apps.py input_filename.json > output_filename.json
+```
+
+
+
+
+
