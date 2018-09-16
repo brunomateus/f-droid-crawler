@@ -82,31 +82,44 @@ class BaseSpider(CrawlSpider):
         item['versions'] = versions
 
         request = scrapy.Request(tech_info, callback=self.parse_info_page)
+        request.meta['start_date'] = response.meta['start_date']
         request.meta['item'] = item
         yield request
 
     def parse_info_page(self, response):
         item = response.meta['item']
+        start_date = datetime.strptime(response.meta['start_date'], '%d-%m-%Y')
         
         vnames = response.css('h2 > span::attr(id)').extract()
         vcodes = response.css('h2 + p + p::text').extract()
-        package = response.css('#mw-content-text > div > div:nth-child(2) p:nth-child(2)::text').extract()[0].split(':')[1].strip()
-        first_added = response.css('#mw-content-text > div > div:nth-child(2) p:nth-child(10)::text').extract()[0].split(':')[1].strip()
 
-        item['number_of_versions'] = len(vnames)
-        item['first_added'] = first_added
+        fields = response.css('#mw-content-text > div > div:nth-child(2) > p::text').extract()
 
+        for f in fields:
+            field = f.split(':')
+            if len(field) == 2:
+                (name, value) = field
+                if name.upper() == 'ID':
+                    package = value.strip()
+                elif name.upper() == 'ADDED':
+                    first_added = datetime.strptime(value.strip(), '%Y-%m-%d')
+
+
+        if first_added >= start_date:
+            item['number_of_versions'] = len(vnames)
+            item['first_added'] = first_added.strftime('%d-%m-%Y')
+        
 #        print("Retriving tech info:  %s versions found" % (item['number_of_versions']))
 
-        if item['number_of_versions'] > 3:
+            if item['number_of_versions'] > 3:
 
-            versions = item['versions'] 
+                versions = item['versions'] 
 
-            for i in range(3, len(vcodes)):
-                vcode = vcodes[i].split(':')[1].strip()
-                versions.append({ 'name': vnames[i],
-                    'code': vcode,
-                    'download_url': 'https://f-droid.org/archive/' + package + '_' + vcode + '.apk',
-                    })
+                for i in range(3, len(vcodes)):
+                    vcode = vcodes[i].split(':')[1].strip()
+                    versions.append({ 'name': vnames[i],
+                        'code': vcode,
+                        'download_url': 'https://f-droid.org/archive/' + package + '_' + vcode + '.apk',
+                        })
 
-        yield item
+            yield item
