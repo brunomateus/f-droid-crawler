@@ -5,13 +5,12 @@ from datetime import datetime
 from github import Github
 from github.GithubException import RateLimitExceededException
 from github.GithubException import UnknownObjectException
+from urllib.parse import urlparse
 
-def get_language(repo_url):
-    repo_url = repo_url.strip()
-    prefix="https://github.com/"
-    if repo_url.startswith(prefix):
-        g = Github("username", "password")
-        repo_name = repo_url[len(prefix):]
+def get_language(repo_url, g):
+    repo_url = urlparse(repo_url.strip())
+    if repo_url.netloc == "github.com":
+        repo_name = repo_url.path[1:]
         try:
             repo = g.get_repo(repo_name)
             languages= repo.get_languages()
@@ -20,25 +19,33 @@ def get_language(repo_url):
                 languages[l] = (languages[l]/total_of_bytes)*100
             return {"name": repo.name, "repo": repo.html_url, "languages": languages}
         except UnknownObjectException as e:
-            print("Impossible to recover language stats from: %s -  %s - Not found 404" % (repo_name, repo_url), file=sys.stderr)
+            print("Impossible to recover language stats from: [%s](%s) - %s" % (repo_name, repo_url.geturl(), e), file=sys.stderr)
         except Exception as e:
             raise e
     else:
-        print("Impossible to recover language stats from %s" % repo_url, file=sys.stderr)
+        print("Impossible to recover language stats from %s" % repo_url.geturl(), file=sys.stderr)
 
 
 def parse_json(input_file, field_to_extract):
     result = []
     json_content = json.load(open(input_file))
+    n_apps = 0
+    n_errors = 0
+    g = Github("username", "password")
     for app in json_content:
+        n_apps += 1
         repo_url = app.get(field_to_extract, "")
         package =""
         if app.get("last_download_url", ""):
             package = app["last_download_url"].split('_')[0][len("https://f-droid.org/repo/"):]
-        app = get_language(repo_url)
+        app = get_language(repo_url, g)
         if app:
             app["package"] = package
             result.append(app)
+        else:
+            n_errors +=1
+    print("From %s apps, %s failed" % (n_apps, n_errors), file=sys.stderr)
+
     return result
 
 def parse_simple_txt(txt):
