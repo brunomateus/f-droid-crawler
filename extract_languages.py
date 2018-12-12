@@ -26,12 +26,11 @@ def get_language(repo_url, g):
         print("Impossible to recover language stats from %s" % repo_url.geturl(), file=sys.stderr)
 
 
-def parse_json(input_file, field_to_extract):
+def parse_json(input_file, field_to_extract, g):
     result = []
     json_content = json.load(open(input_file))
     n_apps = 0
     n_errors = 0
-    g = Github("username", "password")
     for app in json_content:
         n_apps += 1
         repo_url = app.get(field_to_extract, "")
@@ -48,13 +47,19 @@ def parse_json(input_file, field_to_extract):
 
     return result
 
-def parse_simple_txt(txt):
+def parse_simple_txt(txt, g):
     result = []
+    n_apps = 0
+    n_errors = 0
     with open(txt, "rt") as f:
         for repo_url in f.readlines():
-            app = get_language(repo_url)
+            n_apps += 1
+            app = get_language(repo_url, g)
             if app:
                 result.append(app)
+            else:
+                n_errors +=1
+    print("From %s apps, %s failed" % (n_apps, n_errors), file=sys.stderr)
     return result
 
 input_file = sys.argv[1]
@@ -64,13 +69,15 @@ if len(input_file) == 0:
 
 result = dict()
 
+g = Github("user", "password")
+
 if input_file.endswith(".json"):
     if len(sys.argv) < 3:
         raise Exception("You need to inform the json field that contais the url repo")
     result["apps"] = parse_json(input_file, sys.argv[2])
 elif not os.path.isfile(input_file) and input_file.startswith("https://"):
-    result = get_language(input_file)
+    result = get_language(input_file, g)
 else:
-    result["apps"] = parse_simple_txt(input_file)
+    result["apps"] = parse_simple_txt(input_file, g)
 
 print(json.dumps(result, indent=4, sort_keys=False))
