@@ -4,7 +4,6 @@ from .base import BaseSpider
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from fdroid.items import AppItem
-from datetime import date
 from datetime import datetime
 
 class AppsSpider(BaseSpider):
@@ -23,9 +22,9 @@ class AppsSpider(BaseSpider):
 
     def __init__(self, start_date=None, *args, **kwargs):
         super(AppsSpider, self).__init__(*args, **kwargs)
-        self.start_date = date.min
+        self.start_date = datetime.min
         if start_date:
-            self.start_date = start_date
+            self.start_date = datetime.strptime(start_date, '%d-%m-%Y')
 
     def parse_item(self, response):
         self.logger.info('Processing... ' + response.url)

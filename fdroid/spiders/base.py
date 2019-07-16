@@ -3,6 +3,9 @@ import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from fdroid.items import AppItem
 from datetime import datetime
+import logging
+
+logger = logging.getLogger('apps_without_first_date')
 
 class BaseSpider(CrawlSpider):
     name = 'base'
@@ -69,6 +72,7 @@ class BaseSpider(CrawlSpider):
         item['last_version_number'] = versions_numbers[1].strip()
         item['last_added_on']  = versions_date[0].strip()
         item['last_download_url'] = download_urls[0].strip()
+        item['first_added'] = versions_date[-1].strip()
 
         other_informations_links =  other_informations.css('::attr(href)').extract()
         if src_index:
@@ -77,8 +81,6 @@ class BaseSpider(CrawlSpider):
         if tech_index:
            tech_info = other_informations_links[tech_index]
 
-
-        
         item['versions'] = versions
 
         request = scrapy.Request(tech_info, callback=self.parse_info_page)
@@ -88,7 +90,11 @@ class BaseSpider(CrawlSpider):
 
     def parse_info_page(self, response):
         item = response.meta['item']
-        start_date = datetime.strptime(response.meta['start_date'], '%d-%m-%Y')
+        if response.status == 404:
+            self.logger.error("{} tech info not avaliable not found {}".format(item['name'],response.url))
+            yield item
+
+        start_date = response.meta['start_date']
         
         vnames = response.css('h2 > span::attr(id)').extract()
         vcodes = response.css('h2 + p + p::text').extract()
@@ -102,12 +108,18 @@ class BaseSpider(CrawlSpider):
                 if name.upper() == 'ID':
                     package = value.strip()
                 elif name.upper() == 'ADDED':
-                    first_added = datetime.strptime(value.strip(), '%Y-%m-%d')
+                    try:
+                        first_added = datetime.strptime(value.strip(), '%Y-%m-%d')
+                    except ValueError:
+                        self.logger.error("{} data format wrong not avaliable {}[{}]".format(value.strip(), item['name'], response.url))
+                        first_added = datetime.strptime(item['first_added'], '%Y-%m-%d')
 
+        if first_added is None:
+            logger.warning("{}[{}] does not have first_added".format(item['name'], response.url))
 
-        if first_added >= start_date:
+        elif first_added >= start_date:
             item['number_of_versions'] = len(vnames)
-            item['first_added'] = first_added.strftime('%d-%m-%Y')
+            item['first_added'] = first_added.strftime('%Y-%m-%d')
         
 #        print("Retriving tech info:  %s versions found" % (item['number_of_versions']))
 
