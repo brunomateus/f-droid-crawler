@@ -73,6 +73,7 @@ class BaseSpider(CrawlSpider):
         item['last_added_on']  = versions_date[0].strip()
         item['last_download_url'] = download_urls[0].strip()
         item['first_added'] = versions_date[-1].strip()
+        item['package']  = item["last_download_url"].split('_')[0][len("https://f-droid.org/repo/"):]
 
         other_informations_links =  other_informations.css('::attr(href)').extract()
         if src_index:
@@ -90,38 +91,30 @@ class BaseSpider(CrawlSpider):
 
     def parse_info_page(self, response):
         item = response.meta['item']
+        first_added =  None 
+        start_date = response.meta['start_date']
+
         if response.status == 404:
             self.logger.error("{} tech info not avaliable not found {}".format(item['name'],response.url))
-            yield item
+        else:
+            vnames = response.css('h2 > span::attr(id)').extract()
+            vcodes = response.css('h2 + p + p::text').extract()
 
-        start_date = response.meta['start_date']
-        
-        vnames = response.css('h2 > span::attr(id)').extract()
-        vcodes = response.css('h2 + p + p::text').extract()
+            fields = response.css('#mw-content-text > div > div:nth-child(2) > p::text').extract()
 
-        fields = response.css('#mw-content-text > div > div:nth-child(2) > p::text').extract()
-
-        for f in fields:
-            field = f.split(':')
-            if len(field) == 2:
-                (name, value) = field
-                if name.upper() == 'ID':
-                    package = value.strip()
-                elif name.upper() == 'ADDED':
-                    try:
-                        first_added = datetime.strptime(value.strip(), '%Y-%m-%d')
-                    except ValueError:
-                        self.logger.error("{} data format wrong not avaliable {}[{}]".format(value.strip(), item['name'], response.url))
-                        first_added = datetime.strptime(item['first_added'], '%Y-%m-%d')
-
-        if first_added is None:
-            logger.warning("{}[{}] does not have first_added".format(item['name'], response.url))
-
-        elif first_added >= start_date:
             item['number_of_versions'] = len(vnames)
-            item['first_added'] = first_added.strftime('%Y-%m-%d')
-        
-#        print("Retriving tech info:  %s versions found" % (item['number_of_versions']))
+                   
+            for f in fields:
+                field = f.split(':')
+                if len(field) == 2:
+                    (name, value) = field
+                    if name.upper() == 'ID':
+                        package = value.strip()
+                    elif name.upper() == 'ADDED':
+                        try:
+                            first_added = datetime.strptime(value.strip(), '%Y-%m-%d')
+                        except ValueError:
+                            self.logger.error("{} data format wrong not avaliable {}[{}]".format(value.strip(), item['name'], response.url))
 
             if item['number_of_versions'] > 3:
 
@@ -134,4 +127,11 @@ class BaseSpider(CrawlSpider):
                         'download_url': 'https://f-droid.org/archive/' + package + '_' + vcode + '.apk',
                         })
 
+
+
+        if first_added is None:
+            logger.warning("{}[{}] does not have first_added".format(item['name'], response.url))
+            first_added = datetime.strptime(item['first_added'], '%Y-%m-%d')
+
+        if first_added >= start_date:
             yield item
